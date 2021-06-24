@@ -13,22 +13,23 @@ const SearchBox = ({server}) =>{
     else {
       async function getResult() {
         setStatu("Loading...")
-        try {
-          const postResponse = await fetch(server, 
-            {method: "POST", 
-            headers: { "Content-Type": "application/json"},
-            body: JSON.stringify({
-            "top_k": 1,
-            "mode": "search",
-            "data": [title]})})
+        const postResponse = await fetch(server, 
+          {method: "POST", 
+          headers: { "Content-Type": "application/json"},
+          body: JSON.stringify({
+          "top_k": 1,
+          "mode": "search",
+          "data": [title]})})
+        if (postResponse.status === 200) {
           const response = await postResponse.json();
+          console.log(response)
           const qa = response["search"]["docs"][0]["matches"][0]["tags"];
           setQustion(qa["question"]);
           setAnswer(qa["answer"]);
-          setStatu("")
+          setStatu("");
         }
-        catch (err) {
-          setStatu(err)
+        else {
+          setStatu(postResponse.status + " error");
         }
       }
       getResult();
