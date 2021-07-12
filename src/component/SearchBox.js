@@ -7,32 +7,42 @@ const SearchBox = ({server}) =>{
   const [question, setQustion] = useState("");
   const [answer, setAnswer] = useState("");
   const onClick = useCallback((title) => () => {
+    setQustion("");
+    setAnswer("");
     if (title.length === 0) {
       setStatu("질문을 입력하세요!")
+    } 
+    else if (title.length <= 2) {
+      setStatu("정보가 부족합니다! 조금 더 길게 입력해주세요.")
     }
     else {
-      async function getResult() {
-        setStatu("Loading...")
-        const postResponse = await fetch(server, 
-          {method: "POST", 
-          headers: { "Content-Type": "application/json"},
-          body: JSON.stringify({
-          "top_k": 1,
-          "mode": "search",
-          "data": [title]})})
-        if (postResponse.status === 200) {
-          const response = await postResponse.json();
-          console.log(response)
-          const qa = response["search"]["docs"][0]["matches"][0]["tags"];
-          setQustion(qa["question"]);
-          setAnswer(qa["answer"]);
-          setStatu("");
+      try {
+        async function getResult() {
+          setStatu("Loading...")
+          const postResponse = await fetch(server, 
+            {method: "POST", 
+            headers: { "Content-Type": "application/json"},
+            body: JSON.stringify({
+            "top_k": 1,
+            "mode": "search",
+            "data": [title]})})
+          if (postResponse.status === 200) {
+            const response = await postResponse.json();
+            console.log(response["search"]["docs"][0])
+            const qa = response["search"]["docs"][0]["matches"][0]["tags"];
+            setQustion(qa["question"]);
+            setAnswer(qa["answer"]);
+            setStatu("");
+          }
+          else {
+            setStatu(postResponse.status + " error");
+          }
         }
-        else {
-          setStatu(postResponse.status + " error");
-        }
+        getResult();
       }
-      getResult();
+      catch (error) {
+        setStatu(error);
+      }
     }
   }, []);
    
